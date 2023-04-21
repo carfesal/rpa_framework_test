@@ -9,6 +9,19 @@ class Robot(ABC):
     def open_browser(self) -> None:
         self.browser.open_available_browser(self.url)
 
+    def close_browser(self) -> None:
+        self.browser.close_all_browsers()
+
     @abstractmethod
     def begin_search(self, search_phrase:str) -> None:
         pass
+
+    @abstractmethod
+    def configure_filters(self) -> None:
+        pass
+    
+    @abstractmethod
+    def scrape_information(self) -> None:
+        pass
+
+    
