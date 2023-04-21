@@ -16,6 +16,8 @@ class NYTimesRobot(Robot):
     def configure_filters(self):
         self.configure_section_filter()
         self.order_results_by("newest")
+        self.configure_date_range("04/19/2023", "04/22/2023")
+        #self.scrape_information()
         return self
     
     def configure_section_filter(self, sections:list=['Science', 'World']) -> None:
@@ -45,7 +47,37 @@ class NYTimesRobot(Robot):
         return (element.get_attribute("value").split("|")[0] in sections) if len(value) > 0 else False
     
     def scrape_information(self) -> None:
-        return super().scrape_information()
+        results_locator = "//ol[@data-testid='search-results']/li[@data-testid='search-bodega-result']"
+        show_more_button_locator = "//button[@data-testid='search-show-more-button']"
+        results = self.load_more_article_results(results_locator)
+        last_result_counter = 0
+
+        while self.browser.does_page_contain_element(show_more_button_locator) and len(results) > last_result_counter:
+            for result in results[last_result_counter:]:
+                self.recolected_data.append(self.extract_information(result))
+            last_result_counter = len(results)
+            self.scroll_and_click_more_articles(show_more_button_locator)
+            results = self.load_more_article_results(results_locator)
+        
+        print(len(self.recolected_data))
+            
     
-    def configure_date_range(since_date:str, to_date:str) -> None:
-        pass
+    def configure_date_range(self, since_date:str, to_date:str) -> None:
+        self.browser.click_button("//button[@data-testid='search-date-dropdown-a']")
+        self.browser.click_button("//li/button[@value='Specific Dates']")
+        self.browser.input_text("//input[@id='startDate']", since_date)
+        time.sleep(2)
+        self.browser.input_text("//input[@id='endDate']", to_date)
+        time.sleep(2)
+        self.browser.click_button("//button[@data-testid='search-date-dropdown-a']")
+
+    def load_more_article_results(self, articles_locator:str) -> list:
+        return self.browser.find_elements(locator=articles_locator)
+        
+    
+    def scroll_and_click_more_articles(self, show_more_locator:str) -> None:
+        if not self.browser.is_element_visible(show_more_locator):
+            self.browser.scroll_element_into_view(show_more_locator)
+            time.sleep(2)
+        self.browser.click_button(show_more_locator)
+    
