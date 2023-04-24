@@ -6,8 +6,11 @@ browser =  NYTimesRobot(url="https://www.nytimes.com/", auto_close=False)
 def minimal_task():
     browser.open_browser()
     #click on the search button
-    browser.begin_search("Coranavirus")\
-            .configure_filters()
+    browser.begin_search("Coronavirus")\
+            .configure_filters()\
+            .scrape_information()
+            
+    
     
 # data-testid="search-input"
 
