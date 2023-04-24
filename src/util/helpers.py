@@ -1,5 +1,8 @@
 import re
 import os.path as path
+import requests
+import os
+
 def count_of_ocurrences_in_text(text:str, word:str):
     if text is None or word is None:
         return 0
@@ -20,24 +23,14 @@ def get_filename(url:str)-> str:
         return None
     return path.basename(scheme_removed)
 
-def format_date(date:str, format:str="%m/%d/%Y")-> str:
-    '''Format a date
-    :param date: date to format
-    :param format: format to use
-    :return: formatted date
-    '''
-    return date.strftime(format)
-
-def download_image(url:str, filename:str, folder:str="./output/images")-> str:
+def download_image(url:str, filename:str, folder:str="images")-> str:
     ''' Download an image
     :param url: url of the image
     :param filename: filename to save the image as
     :param folder: folder to save the image in
     :return: path to the image
     '''
-    import requests
-    import os.path as path
-    import os
+   
     if not path.exists(folder):
         os.makedirs(folder)
     response = requests.get(url)
@@ -54,3 +47,4 @@ def check_if_text_contains_money(text:str)-> bool:
     if text is None:
         return False
     return re.search(r"(\$(\d{1,3}(\,\d{3})*|(\d+))(\.\d+)?)|((\d{1,3}(\,\d{3})*|(\d+))(\.\d+)? (dollars|USD))", text) is not None
+

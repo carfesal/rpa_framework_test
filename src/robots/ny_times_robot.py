@@ -141,18 +141,19 @@ class NYTimesRobot(Robot):
         description = self.get_attribute(self.find_element("./div/div/div/a/p", article), "innerHTML")
         img_src = self.get_attribute(self.find_element("./div/div//img", article), "src")
         
-        #self.download_article_images(img_src)
+        self.download_article_images(img_src)
         
         self.recolected_data.append(self.fill_data_information(date, title, description, img_src))
 
     def download_article_images(self, img_src:str = None) -> str:
         '''Download the image of an article'''
+        img_path = None
         try:
-            if (img_src is None): return None
+            if (img_src is None): 
+                 raise Exception("Image source is None")
             img_path = helpers.download_image(img_src, helpers.get_filename(img_src))
             logger.info(f"Image created at path: {img_path}")
         except Exception as e:
-            img_path = None
             logger.warning("Error while downloading image: {e}")            
         finally:
             return img_path
