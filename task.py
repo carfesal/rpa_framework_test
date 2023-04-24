@@ -1,12 +1,15 @@
 """Template robot with Python."""
 from src.robots.ny_times_robot import NYTimesRobot
+import src.util.work_items as work_items
 
-browser =  NYTimesRobot(url="https://www.nytimes.com/", auto_close=False)
+variables = work_items.get_work_item_variables()
+browser =  NYTimesRobot(url="https://www.nytimes.com/", data=variables, auto_close=False)
+
 
 def minimal_task():
     browser.open_browser()
     #click on the search button
-    browser.begin_search("Coronavirus")\
+    browser.begin_search()\
             .configure_filters()\
             .scrape_information()
             

@@ -6,19 +6,23 @@ from src.util.logging import logger
 
 
 class Robot(ABC):
-    def __init__(self, url:str, auto_close:bool = False) -> None:
+    def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
         self.browser = Selenium(auto_close=auto_close)
         self.url = url
         self.recolected_data = []
+        self.search_phrase = data['search_phrase'] if 'search_phrase' in data.keys() else ""
+        self.sections = data['section'] if 'section' in data.keys() else []
+        self.number_of_months = int(data['number_of_months']) if 'number_of_months' in data.keys() else 0
     
     def open_browser(self) -> None:
         self.browser.open_available_browser(self.url)
+        self.browser.maximize_browser_window()
 
     def close_browser(self) -> None:
         self.browser.close_all_browsers()
 
     @abstractmethod
-    def begin_search(self, search_phrase:str) -> None:
+    def begin_search(self) -> None:
         pass
 
     @abstractmethod

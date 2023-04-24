@@ -2,33 +2,30 @@ from src.robots.robot import Robot
 import time
 import src.util.helpers as helpers
 from RPA.Excel.Files import Files
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 
 class NYTimesRobot(Robot):
-    def __init__(self, url:str, auto_close:bool = False) -> None:
-        super().__init__(url=url, auto_close=auto_close)
+    def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
+        super().__init__(url=url, data=data, auto_close=auto_close)
 
-    def begin_search(self, search_phrase:str):
+    def begin_search(self):
         '''
-        Begin the search using the search phrase
-        search_phrase: phrase to search for
-        '''
-        self.search_phrase = search_phrase
+        Begin the search using the search phrase        
+        '''         
         self.browser.click_button("//button[@data-test-id='search-button']")
-        self.browser.input_text("//input[@data-testid='search-input']", search_phrase)
-        self.browser.click_button("//button[@data-test-id='search-submit']")
-        time.sleep(5)
-        
+        self.browser.input_text("//input[@data-testid='search-input']", self.search_phrase)
+        self.browser.click_button("//button[@data-test-id='search-submit']"); time.sleep(5)
         return self
 
     def configure_filters(self):
         '''Configure filters for the search of articles'''
-
         self.configure_section_filter()
         self.order_results_by("newest")
-        self.configure_date_range("04/19/2023", "04/22/2023")
-        time.sleep(2)
-        #self.scrape_information()
+        #configure date range
+        date_range = self.get_date_range()
+        self.configure_date_range(date_range[0], date_range[1]); time.sleep(2)
         return self
     
     def configure_section_filter(self, sections:list=[]) -> None:
@@ -36,14 +33,10 @@ class NYTimesRobot(Robot):
         sections: list of sections to filter by. If empty, all sections will be selected
         '''
         if len(sections) == 0 : return
-
         #click the sections filter
-        self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']")
-        time.sleep(2)
-
+        self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']"); time.sleep(2)
         #select all sections checkboxes
-        self.select_sections(sections)
-        
+        self.select_sections(sections)        
         #close the sections filter
         self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']")
 
@@ -156,4 +149,15 @@ class NYTimesRobot(Robot):
         lib.save_workbook()               
         
         return self
+
+    def get_date_range(self) -> tuple:
+        date_until = datetime.today()
+
+        if self.number_of_months in [0,1]:
+            date_from = datetime.today().replace(day=1)
+        else:
+            date_from = (date_until - relativedelta(months=self.number_of_months - 1)).replace(day=1)
+
+        return (datetime.strftime(date_from, '%m/%d/%Y'), datetime.strftime(date_until, '%m/%d/%Y'))
+        
 
