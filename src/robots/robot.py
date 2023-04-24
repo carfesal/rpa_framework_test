@@ -32,6 +32,10 @@ class Robot(ABC):
     @abstractmethod
     def scrape_information(self) -> None:
         pass
+    
+    @abstractmethod
+    def create_output_file(self) -> None:
+        pass
 
     def find_elements(self, locator:str, parent = None) -> list:
         return self.browser.find_elements(locator, parent)
@@ -43,10 +47,13 @@ class Robot(ABC):
             else: 
                 element = self.browser.find_element(locator, parent)
         except Exception as e:
-            logger.error(f"Element not found: {e}")
+            logger.warning(f"Element not found: {e}")
             element = None
         finally:
             return element
+    
+    def click_button_on_page(self, button_xpath:str) -> None:
+        self.browser.click_button(button_xpath)
         
     def _get_method_of_search(self, by: str = 'xpath'): 
         if by == 'id':

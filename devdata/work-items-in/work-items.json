@@ -3,7 +3,7 @@
         "payload": {
             "search_phrase": "Coronavirus",
             "section": ["U.S.", "World"],
-            "number_of_months": 3
+            "number_of_months": 1
         },
         "files":{}
     }

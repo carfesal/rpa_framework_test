@@ -28,8 +28,8 @@ def format_date(date:str, format:str="%m/%d/%Y")-> str:
     '''
     return date.strftime(format)
 
-def download_image(url:str, filename:str, folder:str="images")-> str:
-    '''Download an image
+def download_image(url:str, filename:str, folder:str="./output/images")-> str:
+    ''' Download an image
     :param url: url of the image
     :param filename: filename to save the image as
     :param folder: folder to save the image in
