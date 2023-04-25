@@ -2,6 +2,8 @@ import re
 import os.path as path
 import requests
 import os
+import zipfile
+import glob
 
 def count_of_ocurrences_in_text(text:str, word:str):
     if text is None or word is None:
@@ -23,7 +25,7 @@ def get_filename(url:str)-> str:
         return None
     return path.basename(scheme_removed)
 
-def download_image(url:str, filename:str, folder:str="images")-> str:
+def download_image(url:str, filename:str, folder:str="./output/images")-> str:
     ''' Download an image
     :param url: url of the image
     :param filename: filename to save the image as
@@ -48,3 +50,13 @@ def check_if_text_contains_money(text:str)-> bool:
         return False
     return re.search(r"(\$(\d{1,3}(\,\d{3})*|(\d+))(\.\d+)?)|((\d{1,3}(\,\d{3})*|(\d+))(\.\d+)? (dollars|USD))", text) is not None
 
+def zip_folder(folder:str = "./output/images", output:str = "./output/compressed.zip")-> str:
+    '''Zip a folder
+    :param folder: folder to zip
+    :param output: output file
+    :return: path to the zip file
+    '''
+    with zipfile.ZipFile(output, 'w') as f:
+        for file in glob.glob(folder + '/*'):
+            f.write(file)
+    return output

@@ -1,7 +1,7 @@
 [
     {
         "payload": {
-            "search_phrase": "Coronavirus",
+            "search_phrase": "politics",
             "section": ["U.S.", "World"],
             "number_of_months": 1
         },

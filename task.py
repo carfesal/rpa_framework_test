@@ -13,7 +13,7 @@ def minimal_task():
         browser.begin_search()\
                 .configure_filters()\
                 .scrape_information()\
-                .create_output_file()
+                .generate_output()
     except Exception as e:
         logger.warning(f"Error: {e}")
     finally:

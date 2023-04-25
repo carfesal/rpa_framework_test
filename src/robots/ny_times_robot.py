@@ -21,7 +21,9 @@ class NYTimesRobot(Robot):
         return self
 
     def configure_filters(self):
-        '''Configure filters for the search of articles'''
+        '''
+        Configure filters for the search of articles
+        '''
         self.configure_section_filter(self.sections)
         self.order_results_by("newest")
         #configure date range
@@ -30,32 +32,52 @@ class NYTimesRobot(Robot):
         return self
     
     def scrape_information(self) -> None:
-        '''Scrape information from the articles loaded in the page'''
+        '''
+        Scrape information from the articles loaded in the page
+        '''
         results_locator = "//ol[@data-testid='search-results']/li[@data-testid='search-bodega-result']"
         show_more_button_locator = "//button[@data-testid='search-show-more-button']"
         results = self.load_more_article_results(results_locator)
         last_result_counter = 0
+        scraping_attempts = 5
 
         if len(results) == 0:
             logger.info("No results found")
             return
         
-        while self.browser.does_page_contain_element(show_more_button_locator) or len(results) > last_result_counter:
+        while (self.browser.does_page_contain_element(show_more_button_locator) or len(results) > last_result_counter) and scraping_attempts > 0:
             try:
                 for result in results[last_result_counter:]:
-                    self.extract_information_from_article(result)                      
+                    self.extract_information_from_article(result)
                 last_result_counter = len(results)
                 self.scroll_and_click_more_articles(show_more_button_locator)
                 results = self.load_more_article_results(results_locator)
             except Exception as e:
                 logger.warning(f"Error while scraping information: {e}")
-                continue
+            finally:
+                if last_result_counter == len(results): 
+                    scraping_attempts -= 1
+                    logger.info(f"Scraping attempts left: {scraping_attempts}")
+                    
         
         logger.info(f"Amount of articles: {len(self.recolected_data)}")        
         return self
     
+    def generate_output(self) -> None:
+        self.create_output_file()
+        self.compress_images()
+        return self
+
+    def compress_images(self) -> None:
+        try:
+            helpers.zip_folder()
+        except Exception as e:
+            logger.warning(f"Error while compressing images: {e}")
+
     def create_output_file(self) -> None:
-        '''Creates an excel file with the information scraped'''
+        '''
+        Creates an excel file with the information scraped
+        '''
         if len(self.recolected_data) == 0:
             logger.info("No data to create excel file")
             return self
@@ -81,7 +103,7 @@ class NYTimesRobot(Robot):
         #select all sections checkboxes
         self.select_sections(sections)        
         #close the sections filter
-        self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']")
+        self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']"); time.sleep(2)
 
     def select_sections(self, sections:list = []) -> None:
         '''
@@ -146,19 +168,32 @@ class NYTimesRobot(Robot):
         self.recolected_data.append(self.fill_data_information(date, title, description, img_src))
 
     def download_article_images(self, img_src:str = None) -> str:
-        '''Download the image of an article'''
+        '''
+        Download the image of an article
+        :param img_src: source of the image
+        '''
         img_path = None
         try:
-            if (img_src is None): 
-                 raise Exception("Image source is None")
-            img_path = helpers.download_image(img_src, helpers.get_filename(img_src))
-            logger.info(f"Image created at path: {img_path}")
+            if self.number_of_files_processed < self.max_amount_files:
+                if (img_src is None): 
+                    raise Exception("Image source is None")
+                img_path = helpers.download_image(img_src, helpers.get_filename(img_src)); self.number_of_files_processed += 1
+                logger.info(f"Image created at path: {img_path}")
+            else: 
+                logger.info("Max amount of files reached. The image will not be downloaded.")
         except Exception as e:
-            logger.warning("Error while downloading image: {e}")            
+            logger.warning(f"Error while downloading image: {e}")            
         finally:
             return img_path
         
     def fill_data_information(self, date, title, description, img_src):
+        '''
+        Fills the data information of an article
+        :param date: date of the article
+        :param title: title of the article
+        :param description: description of the article
+        :param img_src: image source of the article
+        '''
         data = {
             "date": date,
             "title": title,
@@ -170,6 +205,9 @@ class NYTimesRobot(Robot):
         return data
 
     def get_date_range(self) -> tuple:
+        '''
+        Returns the date range based on the number of months to search
+        '''
         date_until = datetime.today()
 
         if self.number_of_months in [0,1]:

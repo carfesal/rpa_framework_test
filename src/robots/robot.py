@@ -9,10 +9,12 @@ class Robot(ABC):
     def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
         self.browser = Selenium(auto_close=auto_close)
         self.url = url
-        self.recolected_data = []
         self.search_phrase = data['search_phrase'] if 'search_phrase' in data.keys() else ""
-        self.sections = data['section'] if 'section' in data.keys() else []
+        self.sections = data['section'] if ('section' in data.keys()) else []
         self.number_of_months = int(data['number_of_months']) if 'number_of_months' in data.keys() else 0
+        self.recolected_data = []
+        self.max_amount_files = 50
+        self.number_of_files_processed = 0
     
     def open_browser(self) -> None:
         self.browser.open_available_browser(self.url)
@@ -34,7 +36,7 @@ class Robot(ABC):
         pass
     
     @abstractmethod
-    def create_output_file(self) -> None:
+    def generate_output(self) -> None:
         pass
 
     def find_elements(self, locator:str, parent = None) -> list:
@@ -53,7 +55,12 @@ class Robot(ABC):
             return element
     
     def click_button_on_page(self, button_xpath:str) -> None:
-        self.browser.click_button(button_xpath)
+        try:
+            self.browser.click_button(button_xpath)
+        except Exception as e:
+            logger.warning(f"Element cannot be clicked: {e}")
+            logger.info("Trying to click with javascript.... ")
+            self.browser.driver.execute_script("arguments[0].click();", self.find_element(button_xpath))
         
     def _get_method_of_search(self, by: str = 'xpath'): 
         if by == 'id':
