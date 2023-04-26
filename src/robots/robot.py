@@ -9,11 +9,10 @@ class Robot(ABC):
     def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
         self.browser = Selenium(auto_close=auto_close)
         self.url = url
-        self.search_phrase = data['search_phrase'] if 'search_phrase' in data.keys() else ""
-        self.sections = data['section'] if ('section' in data.keys()) else []
-        self.number_of_months = int(data['number_of_months']) if 'number_of_months' in data.keys() else 0
+        self.search_phrase, self.sections, self.number_of_months = self._validate_data(data)        
         self.recolected_data = []
-        self.max_amount_files = 50
+        self.max_amount_files = 48
+        self.max_size_of_folder = 20 * 1024 * 1024 #20MB
         self.number_of_files_processed = 0
     
     def open_browser(self) -> None:
@@ -84,3 +83,21 @@ class Robot(ABC):
         if element is None: return None
         return element.get_attribute(attribute)
 
+    def _validate_data(self, data:dict) -> tuple:
+        search_phrase = "rpachallenge"
+        sections = []
+        number_of_months = 0
+
+        if ('search_phrase' in data.keys()) and type(data['search_phrase']) == str:
+            search_phrase = data['search_phrase']
+        
+        if ('section' in data.keys()):
+            if (type(data['section']) == list):
+                sections = data['section']
+            elif type(data['section']) == str:
+                sections.append(data['section'])
+        
+        if ('number_of_months' in data.keys()) and (type(data['number_of_months']) == int) and data['number_of_months'] >= 0 :
+            number_of_months = data['number_of_months']
+        
+        return (search_phrase, sections, number_of_months)

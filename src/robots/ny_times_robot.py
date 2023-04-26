@@ -10,14 +10,15 @@ from src.util.logging import logger
 class NYTimesRobot(Robot):
     def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
         super().__init__(url=url, data=data, auto_close=auto_close)
+        self.excel_file = self.create_output_file()
 
     def begin_search(self):
         '''
         Begin the search using the search phrase        
         '''         
-        self.browser.click_button("//button[@data-test-id='search-button']")
+        self.click_button_on_page("//button[@data-test-id='search-button']")
         self.browser.input_text("//input[@data-testid='search-input']", self.search_phrase)
-        self.browser.click_button("//button[@data-test-id='search-submit']"); time.sleep(5)
+        self.click_button_on_page("//button[@data-test-id='search-submit']"); time.sleep(5)
         return self
 
     def configure_filters(self):
@@ -45,7 +46,10 @@ class NYTimesRobot(Robot):
             logger.info("No results found")
             return
         
-        while (self.browser.does_page_contain_element(show_more_button_locator) or len(results) > last_result_counter) and scraping_attempts > 0:
+        while (self.is_size_of_output_allowed() and \
+              (self.browser.does_page_contain_element(show_more_button_locator) or len(results) > last_result_counter) and \
+              scraping_attempts > 0):
+            
             try:
                 for result in results[last_result_counter:]:
                     self.extract_information_from_article(result)
@@ -64,8 +68,8 @@ class NYTimesRobot(Robot):
         return self
     
     def generate_output(self) -> None:
-        self.create_output_file()
-        self.compress_images()
+        # self.create_output_file()
+        # self.compress_images() #commented because it is not that the client wants. No need to compress images
         return self
 
     def compress_images(self) -> None:
@@ -74,24 +78,20 @@ class NYTimesRobot(Robot):
         except Exception as e:
             logger.warning(f"Error while compressing images: {e}")
 
-    def create_output_file(self) -> None:
+    def create_output_file(self) -> Files:
         '''
         Creates an excel file with the information scraped
         '''
-        if len(self.recolected_data) == 0:
-            logger.info("No data to create excel file")
-            return self
-        
         # Create modern format workbook with a path set.
         lib = Files()
         lib.create_workbook(path="./output/articles.xlsx", fmt="xlsx")
         lib.save_workbook()
 
         # Create a worksheet with a name set.
-        lib.create_worksheet(name="articles",content=self.recolected_data, header=True)
+        lib.create_worksheet(name="articles", header=True)
         lib.save_workbook()               
         
-        return self
+        return lib
     
     def configure_section_filter(self, sections:list=[]) -> None:
         '''
@@ -163,9 +163,13 @@ class NYTimesRobot(Robot):
         description = self.get_attribute(self.find_element("./div/div/div/a/p", article), "innerHTML")
         img_src = self.get_attribute(self.find_element("./div/div//img", article), "src")
         
+        #Trying to download the image
         self.download_article_images(img_src)
         
-        self.recolected_data.append(self.fill_data_information(date, title, description, img_src))
+        #Appending the information to the recolected_data list
+        extracted_data = self.fill_data_information(date, title, description, img_src)
+        self.append_data_to_excel(extracted_data)
+        self.recolected_data.append(extracted_data)
 
     def download_article_images(self, img_src:str = None) -> str:
         '''
@@ -217,4 +221,23 @@ class NYTimesRobot(Robot):
 
         return (datetime.strftime(date_from, '%m/%d/%Y'), datetime.strftime(date_until, '%m/%d/%Y'))
         
+    def append_data_to_excel(self, data:dict) -> None:
+        '''
+        Appends the recolected data to the excel file
+        :param data: data to append
+        '''
+        self.excel_file.append_rows_to_worksheet(data)
+        self.excel_file.save_workbook()
 
+    def is_size_of_output_allowed(self):
+        '''
+        Checks if the output is greater than the max amount of rows allowed
+        '''
+        output_folder_size = helpers.get_size_of_folder()
+        logger.info(f"Output folder size: {output_folder_size}")
+        if output_folder_size >= self.max_size_of_folder:
+            logger.info("Output folder size is greater than the max output size. Deleting output folder...")
+            return False
+        return True
+            
+    

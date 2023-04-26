@@ -17,10 +17,7 @@ def minimal_task():
     except Exception as e:
         logger.warning(f"Error: {e}")
     finally:
-        browser.close_browser()            
-    
-    
-# data-testid="search-input"
+        browser.close_browser()   
 
 if __name__ == "__main__":
     minimal_task()

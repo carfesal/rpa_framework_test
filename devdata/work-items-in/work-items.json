@@ -3,7 +3,7 @@
         "payload": {
             "search_phrase": "politics",
             "section": ["U.S.", "World"],
-            "number_of_months": 1
+            "number_of_months": 2
         },
         "files":{}
     }

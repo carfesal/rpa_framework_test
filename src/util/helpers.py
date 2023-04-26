@@ -25,7 +25,7 @@ def get_filename(url:str)-> str:
         return None
     return path.basename(scheme_removed)
 
-def download_image(url:str, filename:str, folder:str="./output/images")-> str:
+def download_image(url:str, filename:str, folder:str="./output")-> str:
     ''' Download an image
     :param url: url of the image
     :param filename: filename to save the image as
@@ -42,7 +42,8 @@ def download_image(url:str, filename:str, folder:str="./output/images")-> str:
     return path.join(folder, filename)
 
 def check_if_text_contains_money(text:str)-> bool:
-    '''Check if the text contains money
+    '''
+    Check if the text contains money
     :param text: text to check
     :return: True if the text contains money, False otherwise
     '''
@@ -51,7 +52,8 @@ def check_if_text_contains_money(text:str)-> bool:
     return re.search(r"(\$(\d{1,3}(\,\d{3})*|(\d+))(\.\d+)?)|((\d{1,3}(\,\d{3})*|(\d+))(\.\d+)? (dollars|USD))", text) is not None
 
 def zip_folder(folder:str = "./output/images", output:str = "./output/compressed.zip")-> str:
-    '''Zip a folder
+    '''
+    Zip a folder
     :param folder: folder to zip
     :param output: output file
     :return: path to the zip file
@@ -60,3 +62,25 @@ def zip_folder(folder:str = "./output/images", output:str = "./output/compressed
         for file in glob.glob(folder + '/*'):
             f.write(file)
     return output
+
+def get_size_of_file(filename:str)-> int:
+    '''
+    Get the size of a file
+    :param filename: filename to get the size of
+    :return: size of the file
+    '''
+    return path.getsize(filename)
+
+def get_size_of_folder(folder:str = "./output")-> int:
+    '''
+    Get the size of a folder
+    :param folder: folder to get the size of
+    :return: size of the folder
+    '''
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(folder):
+        for f in filenames:
+            fp = path.join(dirpath, f)
+            total_size += path.getsize(fp)
+    return total_size
+
