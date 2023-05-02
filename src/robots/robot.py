@@ -17,7 +17,7 @@ class Robot(ABC):
     
     def open_browser(self) -> None:
         self.browser.open_available_browser(self.url)
-        self.browser.maximize_browser_window()
+        self.browser.maximize_browser_window(); self.browser.set_selenium_timeout(10)
 
     def close_browser(self) -> None:
         self.browser.close_all_browsers()
@@ -38,24 +38,29 @@ class Robot(ABC):
     def generate_output(self) -> None:
         pass
 
-    def find_elements(self, locator:str, parent = None) -> list:
+    def find_elements(self, locator:str, parent = None, wait:bool = True) -> list:
+        if wait:
+            self.browser.wait_until_page_contains_element(locator)
         return self.browser.find_elements(locator, parent)
     
-    def find_element(self, locator:str, parent:WebElement = None, by:str = 'xpath', wait:int = 0) -> WebElement:
+    def find_element(self, locator:str, parent:WebElement = None, by:str = 'xpath', wait:bool = False) -> WebElement:
         try:
             if parent is not None:
                 element = parent.find_element(self._get_method_of_search(by), locator) #find element in parent
             else: 
-                element = self.browser.find_element(locator, parent)
+                element = self.browser.find_element(locator, parent)                
         except Exception as e:
             logger.warning(f"Element not found: {e}")
             element = None
         finally:
             return element
     
-    def click_button_on_page(self, button_xpath:str) -> None:
+    def click_button_on_page(self, button_xpath:str, wait_for_visibility:bool=True) -> None:
         try:
-            self.browser.click_button(button_xpath)
+            if wait_for_visibility:
+                self.browser.wait_and_click_button(button_xpath)
+            else:
+                self.browser.click_button(button_xpath)
         except Exception as e:
             logger.warning(f"Element cannot be clicked: {e}")
             logger.info("Trying to click with javascript.... ")

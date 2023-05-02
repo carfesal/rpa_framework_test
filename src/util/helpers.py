@@ -1,5 +1,4 @@
 import re
-import os.path as path
 import requests
 import os
 import zipfile
@@ -23,7 +22,7 @@ def get_filename(url:str)-> str:
     scheme_removed = query_string_removed.split("://")[-1].split(":")[-1]
     if scheme_removed.find("/") == -1:
         return None
-    return path.basename(scheme_removed)
+    return os.path.basename(scheme_removed)
 
 def download_image(url:str, filename:str, folder:str="./output")-> str:
     ''' Download an image
@@ -33,13 +32,13 @@ def download_image(url:str, filename:str, folder:str="./output")-> str:
     :return: path to the image
     '''
    
-    if not path.exists(folder):
+    if not os.path.exists(folder):
         os.makedirs(folder)
     response = requests.get(url)
     if response.status_code == 200:
-        with open(path.join(folder, filename), "wb") as f:
+        with open(os.path.join(folder, filename), "wb") as f:
             f.write(response.content)
-    return path.join(folder, filename)
+    return os.path.join(folder, filename)
 
 def check_if_text_contains_money(text:str)-> bool:
     '''
@@ -69,7 +68,7 @@ def get_size_of_file(filename:str)-> int:
     :param filename: filename to get the size of
     :return: size of the file
     '''
-    return path.getsize(filename)
+    return os.path.getsize(filename)
 
 def get_size_of_folder(folder:str = "./output")-> int:
     '''
@@ -80,7 +79,7 @@ def get_size_of_folder(folder:str = "./output")-> int:
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(folder):
         for f in filenames:
-            fp = path.join(dirpath, f)
-            total_size += path.getsize(fp)
+            fp = os.path.join(dirpath, f)
+            total_size += os.path.getsize(fp)
     return total_size
 

@@ -18,7 +18,7 @@ class NYTimesRobot(Robot):
         '''         
         self.click_button_on_page("//button[@data-test-id='search-button']")
         self.browser.input_text("//input[@data-testid='search-input']", self.search_phrase)
-        self.click_button_on_page("//button[@data-test-id='search-submit']"); time.sleep(5)
+        self.click_button_on_page("//button[@data-test-id='search-submit']")
         return self
 
     def configure_filters(self):
@@ -29,7 +29,7 @@ class NYTimesRobot(Robot):
         self.order_results_by("newest")
         #configure date range
         date_range = self.get_date_range()
-        self.configure_date_range(date_range[0], date_range[1]); time.sleep(2)
+        self.configure_date_range(date_range[0], date_range[1])
         return self
     
     def scrape_information(self) -> None:
@@ -99,18 +99,18 @@ class NYTimesRobot(Robot):
         '''
         if len(sections) == 0 : return
         #click the sections filter
-        self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']"); time.sleep(2)
+        self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']")
         #select all sections checkboxes
         self.select_sections(sections)        
         #close the sections filter
-        self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']"); time.sleep(2)
+        self.click_button_on_page("//div[@data-testid='section']//button[@data-testid='search-multiselect-button']")
 
     def select_sections(self, sections:list = []) -> None:
         '''
         sections: list of sections to select. If empty, all sections will be selected
         '''
         #select all sections checkboxes
-        selection_checkboxes = self.browser.find_elements("//div[@data-testid='section']//input[@data-testid='DropdownLabelCheckbox']")
+        selection_checkboxes = self.find_elements("//div[@data-testid='section']//input[@data-testid='DropdownLabelCheckbox']")
 
         for selection in selection_checkboxes:
             if (self.contains_text(selection, sections)):
@@ -132,25 +132,25 @@ class NYTimesRobot(Robot):
         :param to_date: date until which the articles will be displayed
         '''
         #click the date filter
-        self.browser.click_button("//button[@data-testid='search-date-dropdown-a']")
+        self.click_button_on_page("//button[@data-testid='search-date-dropdown-a']")
 
         #click the specific dates option
-        self.browser.click_button("//li/button[@value='Specific Dates']")
+        self.click_button_on_page("//li/button[@value='Specific Dates']")
 
         #input the dates
-        self.browser.input_text("//input[@id='startDate']", since_date); time.sleep(1)        
-        self.browser.input_text("//input[@id='endDate']", to_date); time.sleep(1)
+        self.browser.input_text("//input[@id='startDate']", since_date)   
+        self.browser.input_text("//input[@id='endDate']", to_date) 
 
         #close the date filter
-        self.click_button_on_page("//button[@data-testid='search-date-dropdown-a']"); time.sleep(2)
+        self.click_button_on_page("//button[@data-testid='search-date-dropdown-a']")
 
     def load_more_article_results(self, articles_locator:str) -> list:
         return self.browser.find_elements(locator=articles_locator)        
     
     def scroll_and_click_more_articles(self, show_more_locator:str) -> None:
         if self.browser.does_page_contain_element(show_more_locator):
-            self.browser.scroll_element_into_view(show_more_locator); time.sleep(2)
-            self.click_button_on_page(show_more_locator); time.sleep(2)
+            self.browser.scroll_element_into_view(show_more_locator)
+            self.click_button_on_page(show_more_locator)
             
     
     def extract_information_from_article(self, article):
