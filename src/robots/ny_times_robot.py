@@ -5,6 +5,7 @@ from RPA.Excel.Files import Files
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from src.util.logging import logger
+from src.util.exceptions import ImageCouldNotBeDownloadedError
 
 
 class NYTimesRobot(Robot):
@@ -29,7 +30,7 @@ class NYTimesRobot(Robot):
         self.order_results_by("newest")
         #configure date range
         date_range = self.get_date_range()
-        self.configure_date_range(date_range[0], date_range[1])
+        self.configure_date_range(date_range[0], date_range[1]);time.sleep(2)
         return self
     
     def scrape_information(self) -> None:
@@ -55,14 +56,13 @@ class NYTimesRobot(Robot):
                     self.extract_information_from_article(result)
                 last_result_counter = len(results)
                 self.scroll_and_click_more_articles(show_more_button_locator)
-                results = self.load_more_article_results(results_locator)
+                results = self.load_more_article_results(results_locator); scraping_attempts = 5
             except Exception as e:
                 logger.warning(f"Error while scraping information: {e}")
             finally:
                 if last_result_counter == len(results): 
                     scraping_attempts -= 1
-                    logger.info(f"Scraping attempts left: {scraping_attempts}")
-                    
+                    logger.info(f"Scraping attempts left: {scraping_attempts}")                    
         
         logger.info(f"Amount of articles: {len(self.recolected_data)}")        
         return self
@@ -180,12 +180,12 @@ class NYTimesRobot(Robot):
         try:
             if self.number_of_files_processed < self.max_amount_files:
                 if (img_src is None): 
-                    raise Exception("Image source is None")
+                    raise ImageCouldNotBeDownloadedError(url=img_src, message="Image source is None")
                 img_path = helpers.download_image(img_src, helpers.get_filename(img_src)); self.number_of_files_processed += 1
                 logger.info(f"Image created at path: {img_path}")
             else: 
                 logger.info("Max amount of files reached. The image will not be downloaded.")
-        except Exception as e:
+        except ImageCouldNotBeDownloadedError as e:
             logger.warning(f"Error while downloading image: {e}")            
         finally:
             return img_path

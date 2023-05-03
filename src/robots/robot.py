@@ -3,7 +3,7 @@ from RPA.Browser.Selenium import Selenium
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from src.util.logging import logger
-
+from selenium.common.exceptions import ElementNotVisibleException, NoSuchElementException, ElementClickInterceptedException
 
 class Robot(ABC):
     def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
