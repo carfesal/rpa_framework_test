@@ -120,7 +120,11 @@ class NYTimesRobot(Robot):
         '''
         :param order_by: order by which the results will be displayed
         '''
-        self.browser.select_from_list_by_value("//select[@data-testid='SearchForm-sortBy']", order_by)
+        try: 
+            self.browser.wait_until_page_contains_element("//select[@data-testid='SearchForm-sortBy']")
+            self.browser.select_from_list_by_value("//select[@data-testid='SearchForm-sortBy']", order_by)
+        except Exception as e:
+            logger.warning(f"The element cannot be selected: {e}")
 
     def contains_text(self, element, sections:list = []) -> bool:
         value = element.get_attribute("value").split("|")

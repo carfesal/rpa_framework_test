@@ -3,6 +3,7 @@ import requests
 import os
 import zipfile
 import glob
+from src.util.logging import logger
 
 def count_of_ocurrences_in_text(text:str, word:str):
     if text is None or word is None:
@@ -82,4 +83,16 @@ def get_size_of_folder(folder:str = "./output")-> int:
             fp = os.path.join(dirpath, f)
             total_size += os.path.getsize(fp)
     return total_size
+
+def print_variables(title:str = "**ENV VARIABLES**", variables:dict = {})-> None:
+    '''
+    Print the variables
+    :param variables: variables to print
+    :return: None
+    '''
+    logger.info(title)
+    if variables is None:
+        return
+    for key, value in variables.items():
+        logger.info(f"{key}: {value}")
 
