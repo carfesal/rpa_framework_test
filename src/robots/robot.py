@@ -3,7 +3,7 @@ from RPA.Browser.Selenium import Selenium
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from src.util.logging import logger
-from selenium.common.exceptions import ElementNotVisibleException, NoSuchElementException, ElementClickInterceptedException, StaleElementReferenceException
+from selenium.common.exceptions import ElementNotVisibleException, NoSuchElementException, ElementClickInterceptedException, StaleElementReferenceException, ElementNotInteractableException
 
 class Robot(ABC):
     def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
@@ -65,7 +65,7 @@ class Robot(ABC):
                 self.browser.wait_and_click_button(button_xpath)
             else:
                 self.browser.click_button(button_xpath)
-        except ElementClickInterceptedException as e:
+        except (ElementClickInterceptedException, ElementNotInteractableException) as e:
             logger.warning(f"Element cannot be clicked: {e}")
             logger.info("Trying to click with javascript.... ")
             self.browser.driver.execute_script("arguments[0].click();", self.find_element(button_xpath))
