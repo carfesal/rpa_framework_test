@@ -84,12 +84,8 @@ class NYTimesRobot(Robot):
         '''
         # Create modern format workbook with a path set.
         lib = Files()
-        lib.create_workbook(path="./output/articles.xlsx", fmt="xlsx")
-        lib.save_workbook()
-
-        # Create a worksheet with a name set.
-        lib.create_worksheet(name="articles", header=True)
-        lib.save_workbook()               
+        lib.create_workbook(path="./output/articles.xlsx", fmt="xlsx", sheet_name="articles")
+        lib.save_workbook()         
         
         return lib
     
@@ -162,7 +158,7 @@ class NYTimesRobot(Robot):
         Extracts the information from an article and appends it to the recolected_data list
         :param article: article from which the information will be extracted
         '''
-        date = self.get_attribute(self.find_element("./div/span", article), "innerHTML")
+        date = self.get_attribute(self.find_element("./div/span", article), "aria-label")
         title = self.get_attribute(self.find_element("./div/div/div/a/h4", article), "innerHTML")
         description = self.get_attribute(self.find_element("./div/div/div/a/p", article), "innerHTML")
         img_src = self.get_attribute(self.find_element("./div/div//img", article), "src")
@@ -203,7 +199,7 @@ class NYTimesRobot(Robot):
         :param img_src: image source of the article
         '''
         data = {
-            "date": date,
+            "date": helpers.format_article_date(date),
             "title": title,
             "description": description,
             "counts_of_search_phase" : helpers.count_of_ocurrences_in_text(title, self.search_phrase) + helpers.count_of_ocurrences_in_text(description, self.search_phrase),

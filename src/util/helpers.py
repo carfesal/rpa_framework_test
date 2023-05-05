@@ -3,6 +3,7 @@ import requests
 import os
 import zipfile
 import glob
+from datetime import datetime, date
 from src.util.logging import logger
 
 def count_of_ocurrences_in_text(text:str, word:str):
@@ -95,4 +96,22 @@ def print_variables(title:str = "**ENV VARIABLES**", variables:dict = {})-> None
         return
     for key, value in variables.items():
         logger.info(f"{key}: {value}")
+
+def format_article_date(date_str:str, output_format:str = "%m/%d/%Y", input_format:str = "%B %d, %Y")-> str:
+    '''
+    Format a date
+    :param date: date to format
+    :param format: format to use
+    :return: formatted date
+    '''
+    date_array = date_str.split(",")
+
+    if len(date_array) == 1:
+        if "ago" in date_array[0].lower().strip():
+            date_time_obj = datetime.now()                     
+        else:
+            date_time_obj = datetime.strptime(date_array[0].strip() + f", {str(datetime.now().year)}", input_format)            
+    else:
+        date_time_obj = datetime.strptime(date_str.strip(), input_format)        
+    return  date_time_obj.strftime(output_format)
 
