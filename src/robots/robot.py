@@ -3,7 +3,7 @@ from RPA.Browser.Selenium import Selenium
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from src.util.logging import logger
-from selenium.common.exceptions import ElementNotVisibleException, NoSuchElementException, ElementClickInterceptedException
+from selenium.common.exceptions import ElementNotVisibleException, NoSuchElementException, ElementClickInterceptedException, StaleElementReferenceException, ElementNotInteractableException
 
 class Robot(ABC):
     def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
@@ -44,13 +44,17 @@ class Robot(ABC):
         return self.browser.find_elements(locator, parent)
     
     def find_element(self, locator:str, parent:WebElement = None, by:str = 'xpath', wait:bool = False) -> WebElement:
+        element = None
         try:
             if parent is not None:
                 element = parent.find_element(self._get_method_of_search(by), locator) #find element in parent
             else: 
                 element = self.browser.find_element(locator, parent)                
-        except Exception as e:
+        except (ElementNotVisibleException, NoSuchElementException) as e:
             logger.warning(f"Element not found: {e}")
+            element = None
+        except StaleElementReferenceException as e:
+            logger.warning(f"Element references is not the exact: {e}")
             element = None
         finally:
             return element
@@ -61,10 +65,12 @@ class Robot(ABC):
                 self.browser.wait_and_click_button(button_xpath)
             else:
                 self.browser.click_button(button_xpath)
-        except Exception as e:
+        except (ElementClickInterceptedException, ElementNotInteractableException) as e:
             logger.warning(f"Element cannot be clicked: {e}")
             logger.info("Trying to click with javascript.... ")
             self.browser.driver.execute_script("arguments[0].click();", self.find_element(button_xpath))
+        except NoSuchElementException as e:
+            logger.warning(f"Element not found: {e}")
         
     def _get_method_of_search(self, by: str = 'xpath'): 
         if by == 'id':
