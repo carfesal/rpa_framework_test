@@ -1,6 +1,6 @@
 import os
 
-def get_environment_input_data():
+def get_environment_input_data() -> dict:
     """Get the input data from the environment variables."""
     search_phrase = os.getenv("SEARCH_PHRASE"),
     

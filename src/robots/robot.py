@@ -6,7 +6,7 @@ from src.util.logging import logger
 from selenium.common.exceptions import ElementNotVisibleException, NoSuchElementException, ElementClickInterceptedException, StaleElementReferenceException, ElementNotInteractableException
 
 class Robot(ABC):
-    def __init__(self, url:str, data:dict = {}, auto_close:bool = False) -> None:
+    def __init__(self, url: str, data: dict = {}, auto_close: bool = False) -> None:
         self.browser = Selenium(auto_close=auto_close)
         self.url = url
         self.search_phrase, self.sections, self.number_of_months = self._validate_data(data)        
@@ -16,6 +16,7 @@ class Robot(ABC):
         self.number_of_files_processed = 0
     
     def open_browser(self) -> None:
+        """Open the browser and go to the url"""
         self.browser.open_available_browser(self.url)
         self.browser.maximize_browser_window(); self.browser.set_selenium_timeout(10)
 
@@ -38,12 +39,27 @@ class Robot(ABC):
     def generate_output(self) -> None:
         pass
 
-    def find_elements(self, locator:str, parent = None, wait:bool = True) -> list:
+    def find_elements(self, locator: str, parent = None, wait: bool = True) -> list:
+        """Find elements in the page
+
+        :param locator: locator to find the elements
+        :param parent: parent element to find the elements in
+        :param wait: wait until the element is visible
+        :return: list of elements
+        """
         if wait:
             self.browser.wait_until_page_contains_element(locator)
         return self.browser.find_elements(locator, parent)
     
-    def find_element(self, locator:str, parent:WebElement = None, by:str = 'xpath', wait:bool = False) -> WebElement:
+    def find_element(self, locator: str, parent: WebElement = None, by: str = 'xpath', wait: bool = False) -> WebElement:
+        """Find an element in the page
+
+        :param locator: locator to find the element
+        :param parent: parent element to find the element in
+        :param by: method of search
+        :param wait: wait until the element is visible
+        :return: element
+        """
         element = None
         try:
             if parent is not None:
@@ -59,7 +75,11 @@ class Robot(ABC):
         finally:
             return element
     
-    def click_button_on_page(self, button_xpath:str, wait_for_visibility:bool=True) -> None:
+    def click_button_on_page(self, button_xpath: str, wait_for_visibility: bool = True) -> None:
+        """Click a button in the page
+        :param button_xpath: xpath of the button
+        :param wait_for_visibility: wait until the button is visible
+        """
         try:
             if wait_for_visibility:
                 self.browser.wait_and_click_button(button_xpath)
@@ -73,6 +93,10 @@ class Robot(ABC):
             logger.warning(f"Element not found: {e}")
         
     def _get_method_of_search(self, by: str = 'xpath'): 
+        """Get the method of search for the element
+        :param by: method of search string
+        :return: method of search
+        """
         if by == 'id':
             return By.ID
         elif by == 'css':
@@ -89,12 +113,21 @@ class Robot(ABC):
             return By.PARTIAL_LINK_TEXT
         else:
             return By.XPATH
-        
-    def get_attribute(self, element:WebElement, attribute:str) -> str:
+     
+    def get_attribute(self, element: WebElement, attribute: str) -> str:
+        """Get the attribute of an element
+        :param element: element to get the attribute
+        :param attribute: attribute to get
+        :return: attribute value
+        """
         if element is None: return None
         return element.get_attribute(attribute)
 
-    def _validate_data(self, data:dict) -> tuple:
+    def _validate_data(self, data: dict) -> tuple:
+        """Validate the data to search
+        :param data: data to search
+        :return: tuple with the data to search
+        """
         search_phrase = "rpachallenge"
         sections = []
         number_of_months = 0
