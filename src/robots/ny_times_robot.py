@@ -1,11 +1,13 @@
 import time
 import src.util.helpers as helpers
+import src.robots.helpers.selenium as selenium_helpers
 from src.robots.robot import Robot
 from RPA.Excel.Files import Files
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from src.util.logging import logger
 from src.util.exceptions import ImageCouldNotBeDownloadedError
+
 
 
 class NYTimesRobot(Robot):
@@ -51,7 +53,8 @@ class NYTimesRobot(Robot):
                 last_result_counter = len(results)
                 self.scroll_and_click_more_articles(show_more_button_locator)
                 results = self.load_more_article_results(results_locator)
-                scraping_attempts = 5
+                if len(results) > last_result_counter:
+                    scraping_attempts = 5
             except Exception as e:
                 logger.warning(f"Error while scraping information: {e}")
             finally:
@@ -161,10 +164,10 @@ class NYTimesRobot(Robot):
 
         :param article: article from which the information will be extracted
         """
-        date = self.get_attribute(self.find_element("./div/span", article), "aria-label")
-        title = self.get_attribute(self.find_element("./div/div/div/a/h4", article), "innerHTML")
-        description = self.get_attribute(self.find_element("./div/div/div/a/p", article), "innerHTML")
-        img_src = self.get_attribute(self.find_element("./div/div//img", article), "src")
+        date = selenium_helpers.get_attribute(self.find_element("./div/span", article), "aria-label")
+        title = selenium_helpers.get_attribute(self.find_element("./div/div/div/a/h4", article), "innerHTML")
+        description = selenium_helpers.get_attribute(self.find_element("./div/div/div/a/p", article), "innerHTML")
+        img_src = selenium_helpers.get_attribute(self.find_element("./div/div//img", article), "src")
         
         self.download_article_images(img_src)  # Trying to download the image
         
