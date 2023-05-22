@@ -12,7 +12,7 @@ class Robot(ABC):
         self.url = url
         self.search_phrase, self.sections, self.number_of_months = validation_helpers.validate_data(data)        
         self.recolected_data = []
-        self.max_amount_files = 46
+        self.max_amount_files = 45
         self.max_size_of_folder = 20 * 1024 * 1024 #20MB
         self.number_of_files_processed = 0
     
